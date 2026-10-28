@@ -174,8 +174,13 @@ class FilesAndCLI(unittest.TestCase):
         target = Path(self.directory.name) / "untouched"
         target.write_text("sensitive-do-not-read-or-replace")
         target.chmod(0o600)
-        for path in (self.path, Path(str(self.path) + ".lock")):
-            with self.subTest(path=path):
+        # Each subcase needs its own lock namespace: rejecting a state symlink
+        # legitimately leaves an empty lock file behind.
+        base = self.path
+        for index, kind in enumerate(("state", "lock")):
+            self.path = base.with_name(f"case-{index}.json")
+            path = self.path if kind == "state" else Path(str(self.path) + ".lock")
+            with self.subTest(kind=kind):
                 path.symlink_to(target)
                 with mock.patch.object(watch, "query_payload") as query:
                     self.assertEqual(self.invoke()[0], 1)
