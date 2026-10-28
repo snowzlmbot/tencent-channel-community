@@ -1,6 +1,6 @@
 # tencent-channel-community
 
-> 此 fork 的自主修复入口：[互动通知兼容适配器](docs/notification-repair.md) · [更新日志](CHANGELOG.md)。这不是原生 CLI 全量通知修复，不自动开启订阅。
+> 此 fork 的自主修复入口：[原生修复范围与前置条件](docs/native-repair.md) · [互动通知兼容适配器](docs/notification-repair.md) · [更新日志](CHANGELOG.md)。这不是原生 CLI 全量通知修复，不自动开启订阅。
 
 <p align="center">
   <img src="https://grouppro.gtimg.cn/wupload/xy/qq_channel/common_pic/kRjatyOL.png" alt="tencent-channel-community" width="120">

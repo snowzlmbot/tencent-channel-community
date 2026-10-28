@@ -9,3 +9,8 @@
 - This is not a patched native CLI. System notifications, join requests and direct messages are outside this adapter's scope. No automatic subscription or scheduler installation is performed.
 
 - Cloud QA exposed a symlink-test fixture collision with a deliberately persistent lock; isolate the test cases without weakening the runtime rejection behavior.
+
+## Native repair investigation
+
+- Clarify that the requested full native engine repair is blocked on the unavailable native CLI source/build interface; the snapshot adapter is not activated as a substitute.
+- Document native routing, authorized host delivery, full-source semantics and acceptance requirements in `docs/native-repair.md`.
