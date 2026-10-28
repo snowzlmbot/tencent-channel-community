@@ -71,3 +71,8 @@
 - Add an owned synthetic protocol integration test spanning HTTP validation, real parsers, three-source engine, private state persistence, failed-read rollback, restart replay and acknowledgment. This is not proof of a real new Tencent event.
 
 - Strictly normalize only documented direct message-tool receipts: positive Telegram message ID, confirmed exact chat and topic; reject wrappers, missing topics and object-valued IDs without acknowledging pending work.
+
+## Source isolation development
+
+- Reconcile current scheduler state: the existing supervisor already points at 361879a and reports successful checks; avoid repeating the previously blocked deployment.
+- Add native CLI source-health reporting and bounded generic partial-source warnings. Healthy-source deliveries and receipt acknowledgements remain independent of the warning; failed-source progress must remain retryable.

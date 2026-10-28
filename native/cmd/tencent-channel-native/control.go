@@ -154,7 +154,15 @@ func runControl(args []string) (handled bool, exit int) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 		var deliveries []notices.OwnedDelivery
-		state, deliveries, err = engine.Poll(ctx, state)
+		if isolated, ok := engine.(interface {
+			PollIsolated(context.Context, notices.SchemaEnvelope) (notices.SchemaEnvelope, []notices.OwnedDelivery, notices.PollHealth, error)
+		}); ok {
+			var health notices.PollHealth
+			state, deliveries, health, err = isolated.PollIsolated(ctx, state)
+			result["health"] = health
+		} else {
+			state, deliveries, err = engine.Poll(ctx, state)
+		}
 		outbox := make([]map[string]any, 0, len(deliveries))
 		for _, d := range deliveries {
 			outbox = append(outbox, map[string]any{"delivery_id": d.Key, "route_key": d.RouteKey, "source": d.Source, "event_key": d.EventKey, "text": d.Text})

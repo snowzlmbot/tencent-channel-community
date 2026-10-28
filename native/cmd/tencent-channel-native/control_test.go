@@ -200,3 +200,40 @@ func TestControlCLIRejectsMalformed(t *testing.T) {
 		t.Fatal("probe intercepted")
 	}
 }
+
+type partialControlFetcher struct{ emptyControlFetcher }
+
+func (partialControlFetcher) ReadSystem(context.Context) ([]map[string]any, error) {
+	return nil, notices.ErrInvalid
+}
+func TestControlCLIIsolatesAndPersistsHealth(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "private.json")
+	activateControl(t, path)
+	old := controlEngineFactory
+	defer func() { controlEngineFactory = old }()
+	controlEngineFactory = func(key string) (controlPoller, error) { return notices.NewEngine(partialControlFetcher{}, key) }
+	out, diagnostic, exit := invokeControl(t, "once", "--state", path)
+	if exit != 0 || diagnostic != "" {
+		t.Fatal("partial poll rejected")
+	}
+	health, ok := out["health"].(map[string]any)
+	if !ok || health["status"] != "degraded" {
+		t.Fatal("partial health missing")
+	}
+	sources := health["sources"].(map[string]any)
+	if sources["system"] != "failed" || sources["dm"] != "ok" || sources["interaction"] != "ok" {
+		t.Fatal("wrong source labels")
+	}
+	store, err := notices.NewStateStore(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+	saved, err := store.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !saved.Initialized[notices.Interaction] || !saved.Initialized[notices.DM] || saved.Initialized[notices.System] || saved.Control.Phase != notices.ACTIVE {
+		t.Fatal("partial state not durably isolated")
+	}
+}

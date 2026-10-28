@@ -50,6 +50,16 @@ async function superviseNative(config) {
       !Array.isArray(batch.outbox) || batch.outbox.length > 1000) {
     throw new Error('Native notification route or outbox mismatch');
   }
+  const previous = config.previous || {};
+  const health = batch.health || {status:'legacy', sources:{}};
+  if (!['healthy','degraded','replay','legacy'].includes(health.status) || !health.sources ||
+      typeof health.sources !== 'object' || Array.isArray(health.sources)) {
+    throw new Error('Invalid native source health');
+  }
+  if (health.status !== 'legacy' && (Object.keys(health.sources).length !== 3 ||
+      !['interaction','system','dm'].every(k => ['ok','failed','deferred'].includes(health.sources[k])))) {
+    throw new Error('Invalid native source health labels');
+  }
   const texts = {
     interaction: '主人，腾讯频道有新的互动通知。',
     system: '主人，腾讯频道有新的系统通知。',
@@ -75,6 +85,19 @@ async function superviseNative(config) {
     if (ack.acknowledged !== true) throw new Error('Native notification acknowledgement failed');
     delivered++;
   }
-  return { state: { lastSuccessAt: new Date().toISOString(), delivered,
-    pendingObserved: batch.outbox.length, deferred: Math.max(0, batch.outbox.length - delivered) } };
+  const now = Date.now();
+  const oldStreak = Number.isSafeInteger(previous.degradedStreak) && previous.degradedStreak >= 0 ? previous.degradedStreak : 0;
+  const degradedStreak = health.status === 'degraded' ? oldStreak + 1 : health.status === 'replay' ? oldStreak : 0;
+  let lastHealthWarningAt = typeof previous.lastHealthWarningAt === 'number' && Number.isFinite(previous.lastHealthWarningAt) ? previous.lastHealthWarningAt : 0;
+  if (health.status === 'degraded' && degradedStreak >= 2 &&
+      (lastHealthWarningAt === 0 || now - lastHealthWarningAt >= 3600000)) {
+    const warning = await message({action:'send',channel:route.Channel,
+      accountId:route.AccountID,target:route.Target,threadId:route.ThreadID,
+      message:'主人，部分腾讯频道通知源暂不可用；其他正常来源继续检查，失败来源的进度已保留等待重试。',final:false});
+    if (nativeTopicReceipt(warning, route) === null) throw new Error('Native health warning delivery was not confirmed');
+    lastHealthWarningAt = now;
+  }
+  return { state: { lastSuccessAt: new Date(now).toISOString(), delivered,
+    pendingObserved: batch.outbox.length, deferred: Math.max(0, batch.outbox.length - delivered),
+    health:health.status, sources:health.sources, degradedStreak, lastHealthWarningAt } };
 }

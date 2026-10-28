@@ -15,7 +15,7 @@ function fixture(options={}) {
     const ack=args.command.includes(' ack ');
     return {status:'completed',exitCode:0,aggregated:JSON.stringify(ack?
       {success:true,acknowledged:!options.ackFail}:
-      {success:true,route:options.route||route,outbox:options.outbox||[]})};
+      {success:true,route:options.route||route,outbox:options.outbox||[],...(options.health?{health:options.health}:{})})};
   },message:async args=>{
     sends.push(args);
     if (options.replyOverride) return options.replyOverride;
@@ -67,4 +67,24 @@ test('receipt normalizer rejects wrappers, absent topic, wrong chat and invalid 
     const f=fixture({outbox:[item],replyOverride});await assert.rejects(f.run(config));
     assert.equal(f.commands.length,1);assert.equal(f.sends.length,1);
   }
+});
+
+test('partial-health preserves healthy delivery and exposes degraded labels',async()=>{
+ const health={status:'degraded',sources:{interaction:'ok',system:'failed',dm:'ok'}};
+ const f=fixture({outbox:[item],health});const result=await f.run(config);
+ assert.equal(result.state.delivered,1);assert.equal(result.state.health,'degraded');assert.equal(result.state.degradedStreak,1);
+ assert.equal(f.sends.length,1);
+});
+test('persistent partial failure warns and throttles without hiding source health',async()=>{
+ const health={status:'degraded',sources:{interaction:'ok',system:'failed',dm:'ok'}};
+ const first=fixture({health});const a=await first.run({...config,previous:{degradedStreak:1}});
+ assert.equal(first.sends.length,1);assert(a.state.lastHealthWarningAt>0);
+ const next=fixture({health});const b=await next.run({...config,previous:a.state});
+ assert.equal(next.sends.length,0);assert.equal(b.state.degradedStreak,3);
+ const recovered=fixture({health:{status:'healthy',sources:{interaction:'ok',system:'ok',dm:'ok'}}});
+ const c=await recovered.run({...config,previous:b.state});assert.equal(c.state.degradedStreak,0);
+});
+test('invalid health metadata fails before message acknowledgment',async()=>{
+ const f=fixture({outbox:[item],health:{status:'degraded',sources:{interaction:'ok',system:'private-error',dm:'ok'}}});
+ await assert.rejects(f.run(config));assert.equal(f.sends.length,0);assert.equal(f.commands.length,1);
 });

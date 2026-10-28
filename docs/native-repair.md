@@ -110,3 +110,9 @@ Source-level fault isolation remains a separate availability limitation: the cur
 ## Follow-up: strict host receipt contract
 
 Existing authorized route-test receipts and Code Mode documentation agree on direct native tool details (`ok`, `messageId`, `chatId`, `receipt.threadId`). The supervisor now normalizes only that shape, requires a positive Telegram message ID and exact chat/topic proof, and rejects arbitrary wrappers or absent topic receipts. Synthetic tests retain the actual field shape using fictitious IDs; no real new event is manufactured and no requested topic is substituted for receipt evidence.
+
+## Source-level isolation
+
+The next engine entry point isolates interaction, system and DM transactions. A failing source retains its prior checkpoint and pending records, while healthy sources can commit into one atomically saved candidate. Partial operation must return a closed health label and per-source status; all-source failure remains an error. The original atomic `Poll` stays available for compatibility.
+
+The CLI exposes health alongside the persisted outbox. The host supervisor tracks degradation separately from successful message receipts and sends a generic warning after repeated partial failure, at most once per hour. It never publishes raw exception text or private notification content. Pending replay does not claim a fresh healthy fetch. This development is not live until exact cloud validation, isolated probing and official scheduler update complete.
