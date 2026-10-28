@@ -24,3 +24,6 @@
 - Add manual cloud validation for the native core and synthetic metadata recovery fixtures; do not upload original binaries or private state.
 
 - Bind native test receipt confirmation to a ten-minute expiry, including revalidation after route resolution; add deterministic expiry fixture.
+
+- Recover five exact native notification MCP tool contracts and preserve native caveats separately from independently authored improvements.
+- Add recovered state DTOs plus versioned dedicated-state store with strict decoding, atomic writes, private files and nonblocking lifetime lock; no legacy-state migration or production activation.

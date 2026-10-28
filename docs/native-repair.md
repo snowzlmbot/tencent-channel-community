@@ -52,3 +52,7 @@ These are static investigation findings, not recovered buildable source or proof
 - `.github/workflows/native-qa.yml`: manual cloud parser tests, native race tests and static checks; no binary or account credentials uploaded.
 
 Until the host transport and real three-source notification integration are verified, this remains development work, not completed native repair.
+
+## Fetch and durable-state reconstruction
+
+See [recovered fetch contract](reverse-fetch-contract.md) for five exact tool names/arguments, three-source response shapes and native cursor caveats. `native/notices/schema.go` models recovered DTOs; `store.go` persists a separate versioned compatibility state with per-route delivery records. These components do not write original CLI subscription files. Authenticated caller and host-delivery integrations remain separate gates; no all-source live readiness is claimed.
