@@ -14,3 +14,5 @@
 
 - Clarify that the requested full native engine repair is blocked on the unavailable native CLI source/build interface; the snapshot adapter is not activated as a substitute.
 - Document native routing, authorized host delivery, full-source semantics and acceptance requirements in `docs/native-repair.md`.
+
+- Audit confirms native shell-template extension exists but does not remove legacy route/active-subscription gates; document precise compiled source patch points without claiming a working native patch.

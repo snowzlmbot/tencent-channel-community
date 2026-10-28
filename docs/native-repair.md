@@ -25,3 +25,17 @@ Use a manually dispatched cloud workflow to test owner/session routing, topic is
 ## Needed input
 
 An authorized source archive/repository matching the native CLI build, with the applicable license/build instructions, or a vendor-supported native host delivery integration. Neither a documentation fork nor extra permissions over local files supplies the missing implementation.
+
+## Native binary audit findings
+
+Read-only help/schema inspection and static Go function/call-path analysis identified a real `notify-daemon --push-command` extension. Its shell-template branch formats native notices and executes a shell command; it is not a socket/callback transport. This does **not** solve initial activation: `notices-on` still resolves the legacy session index, the daemon requires active subscription state, and the worker validates an existing session-key route. `OPENCLAW_STATE_DIR` changes lookup roots, not the route representation.
+
+The normal native worker contains interaction, system and direct-message pollers. Preserve those rather than substitute the independent snapshot adapter. Static evidence also shows the custom shell-template branch differs from the normal per-item delivery path; do not assume identical retry, pushed-record or reference semantics without tests.
+
+Likely source-level patch points, based on compiled function/source metadata:
+
+- `internal/subscription/state.go`: `RouteTarget.Resolve`, `ResolveSessionIDFromSessionKey`.
+- `commands/pd/manage/subscription.go`: activation/confirmation, `hasPushRoute`, `pushNotifications`, normal delivery and template transport handling.
+- `internal/subscription/daemon.go` / `daemon_unix.go`: persistence and inheritance across worker restart and guard recovery.
+
+These are static investigation findings, not recovered buildable source or proof of a running fix. No binary patching, subscription-state editing, daemon startup or real message delivery was performed during this audit. There is still no supported first-activation route injection flag identified.
