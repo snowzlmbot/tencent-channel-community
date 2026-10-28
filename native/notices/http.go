@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -152,6 +153,19 @@ func nativeReadArgs(tool string, args map[string]any) (map[string]any, bool) {
 	return nil, false
 }
 
+// A closed stage label aids runtime diagnosis without returning raw errors.
+type nativeCallFailure struct{ stage string }
+
+func (e *nativeCallFailure) Error() string { return "native read failed" }
+func (e *nativeCallFailure) Unwrap() error { return ErrInvalid }
+func NativeFailureStage(err error) string {
+	var failure *nativeCallFailure
+	if errors.As(err, &failure) {
+		return failure.stage
+	}
+	return "validation"
+}
+
 func (c *NativeHTTPCaller) Call(ctx context.Context, tool string, args map[string]any) (map[string]any, error) {
 	if c == nil || ctx == nil || ctx.Err() != nil || c.credential == nil || c.client == nil || c.client.Transport == nil ||
 		!approvedNativeEndpoint(nativeMCPEndpoint) {
@@ -176,7 +190,7 @@ func (c *NativeHTTPCaller) Call(ctx context.Context, tool string, args map[strin
 	}
 	token, err := c.credential(ctx)
 	if err != nil || !validNativeToken(token) || ctx.Err() != nil {
-		return nil, ErrInvalid
+		return nil, &nativeCallFailure{"credential"}
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
@@ -186,17 +200,21 @@ func (c *NativeHTTPCaller) Call(ctx context.Context, tool string, args map[strin
 	}
 	response, err := c.client.Do(req)
 	if err != nil {
-		return nil, ErrInvalid
+		return nil, &nativeCallFailure{"transport"}
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return nil, ErrInvalid
+		return nil, &nativeCallFailure{"http_status"}
 	}
 	data, err := io.ReadAll(io.LimitReader(response.Body, maxNativeResponse+1))
 	if err != nil || len(data) > maxNativeResponse || ctx.Err() != nil {
 		return nil, ErrInvalid
 	}
-	return decodeNativeResult(data)
+	result, err := decodeNativeResult(data)
+	if err != nil {
+		return nil, &nativeCallFailure{"response_envelope"}
+	}
+	return result, nil
 }
 
 // JSON numbers retain their lexical form: underflow (e.g. 1e-999) must not

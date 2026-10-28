@@ -151,14 +151,14 @@ func TestNativeHTTPToolsAndArguments(t *testing.T) {
 			t.Fatal("invalid args dispatched")
 			return nil, ErrInvalid
 		}))
-		if _, err := caller.Call(context.Background(), tc.tool, tc.args); err != ErrInvalid || called {
+		if _, err := caller.Call(context.Background(), tc.tool, tc.args); !errors.Is(err, ErrInvalid) || called {
 			t.Errorf("invalid read resolved credentials: %s", tc.tool)
 		}
 	}
 	t.Setenv("QQ_AI_CONNECT_MCP_ENV", "bad;cookie")
 	caller := newNativeHTTPCaller(func(context.Context) (string, error) { t.Fatal("invalid cookie resolved credential"); return "", nil }, nil)
 	caller.client.Transport = nativeRoundTripFunc(func(*http.Request) (*http.Response, error) { t.Fatal("bad cookie dispatched"); return nil, ErrInvalid })
-	if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); err != ErrInvalid {
+	if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); !errors.Is(err, ErrInvalid) {
 		t.Fatal("invalid cookie accepted")
 	}
 }
@@ -189,7 +189,7 @@ func TestNativeHTTPResultValidation(t *testing.T) {
 		invalid = append(invalid, `{"jsonrpc":"2.0","id":1,"result":{"_meta":{"AdditionalFields":{"retCode":`+code+`}}}}`)
 	}
 	for i, body := range invalid {
-		if _, err := decodeNativeResult([]byte(body)); err != ErrInvalid {
+		if _, err := decodeNativeResult([]byte(body)); !errors.Is(err, ErrInvalid) {
 			t.Errorf("invalid response %d accepted", i)
 		}
 	}
@@ -227,7 +227,7 @@ func TestNativeHTTPLimitsRedirectsAndSafeErrors(t *testing.T) {
 			r.Header.Set("Location", "https://unapproved.invalid/redirect")
 			return r, nil
 		}))
-		if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); err != ErrInvalid || calls != 1 {
+		if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); !errors.Is(err, ErrInvalid) || calls != 1 {
 			t.Errorf("status %d accepted or retried/redirected", status)
 		}
 	}
@@ -235,7 +235,7 @@ func TestNativeHTTPLimitsRedirectsAndSafeErrors(t *testing.T) {
 	caller := newNativeHTTPCaller(func(context.Context) (string, error) { return "dummy", nil }, nativeRoundTripFunc(func(*http.Request) (*http.Response, error) {
 		return &http.Response{StatusCode: 200, Header: make(http.Header), Body: body}, nil
 	}))
-	if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); err != ErrInvalid || body.read != maxNativeResponse+1 || !body.closed {
+	if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); !errors.Is(err, ErrInvalid) || body.read != maxNativeResponse+1 || !body.closed {
 		t.Fatal("response was not bounded and closed")
 	}
 	for _, provider := range []CredentialProvider{
@@ -247,12 +247,12 @@ func TestNativeHTTPLimitsRedirectsAndSafeErrors(t *testing.T) {
 			t.Fatal("invalid credential dispatched")
 			return nil, ErrInvalid
 		}))
-		if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); err != ErrInvalid {
+		if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); !errors.Is(err, ErrInvalid) {
 			t.Fatal("unsanitized credential error")
 		}
 	}
 	caller = newNativeHTTPCaller(func(context.Context) (string, error) { return "dummy", nil }, nativeRoundTripFunc(func(*http.Request) (*http.Response, error) { return nil, errors.New("private transport detail") }))
-	if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); err != ErrInvalid {
+	if _, err := caller.Call(context.Background(), "get_notice_list", map[string]any{"limit": 5}); !errors.Is(err, ErrInvalid) {
 		t.Fatal("transport error was not sanitized")
 	}
 }
@@ -262,7 +262,7 @@ func TestNativeHTTPCancellationAndFetcherUnwrap(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	caller := newNativeHTTPCaller(func(context.Context) (string, error) { t.Fatal("canceled request resolved credential"); return "", nil }, nil)
-	if _, err := caller.Call(ctx, "get_notice_list", map[string]any{"limit": 5}); err != ErrInvalid {
+	if _, err := caller.Call(ctx, "get_notice_list", map[string]any{"limit": 5}); !errors.Is(err, ErrInvalid) {
 		t.Fatal("canceled context accepted")
 	}
 	ctx, cancel = context.WithCancel(context.Background())
@@ -272,7 +272,7 @@ func TestNativeHTTPCancellationAndFetcherUnwrap(t *testing.T) {
 		<-r.Context().Done()
 		return nil, r.Context().Err()
 	}))
-	if _, err := caller.Call(ctx, "get_notice_list", map[string]any{"limit": 5}); err != ErrInvalid {
+	if _, err := caller.Call(ctx, "get_notice_list", map[string]any{"limit": 5}); !errors.Is(err, ErrInvalid) {
 		t.Fatal("transport cancellation not honored")
 	}
 	for _, result := range []string{`{"structuredContent":{"noticeList":[]}}`, `{"noticeList":[]}`} {

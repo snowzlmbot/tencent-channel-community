@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"time"
 
@@ -23,22 +24,27 @@ func main() {
 	counts := map[string]int{}
 	interactions, err := f.ReadInteractions(ctx, "")
 	if err != nil {
-		fail("interaction")
+		fail("interaction", err)
 	}
 	counts["interaction"] = len(interactions)
 	system, err := f.ReadSystem(ctx)
 	if err != nil {
-		fail("system")
+		fail("system", err)
 	}
 	counts["system"] = len(system)
 	dm, err := f.ReadDMSnapshot(ctx)
 	if err != nil {
-		fail("dm")
+		fail("dm", err)
 	}
 	counts["dm_channels"] = len(dm)
 	_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"success": true, "mode": "read_only_probe", "sources": counts, "subscription_enabled": false})
 }
-func fail(stage string) {
-	_ = json.NewEncoder(os.Stderr).Encode(map[string]any{"success": false, "stage": stage, "message": "native read probe failed; credential and response details withheld"})
+func fail(stage string, err error) {
+	category := notices.NativeFailureStage(err)
+	if errors.Is(err, notices.ErrFetchPayload) {
+		category = "response_shape"
+	}
+
+	_ = json.NewEncoder(os.Stderr).Encode(map[string]any{"success": false, "stage": stage, "category": category, "message": "native read probe failed; credential and response details withheld"})
 	os.Exit(1)
 }
