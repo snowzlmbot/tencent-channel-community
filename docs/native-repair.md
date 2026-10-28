@@ -124,3 +124,11 @@ Native source `107c40b823007761de37dc7cd682dadd76b10839` passed [cloud QA](https
 The checksum-verified application passed the authenticated three-source probe. An isolated private copy of existing state then completed `once` with health `healthy` and all three source labels `ok`, without replacing production baselines. Failure/recovery behavior is covered by synthetic fixtures, not manufactured live events.
 
 The live supervisor was independently re-read and remains on the previously deployed `361879a`, with successful recent checks. The official update attempt for the new source-isolation payload was refused because the current turn could not capture `exec`/`message` runtime authority. Re-reading confirmed no update occurred. Do not remove the explicit tool cap, replace the pinned executable in place, edit the scheduler database or create a duplicate job to bypass this gate. Deployment needs a fresh verified owner/administrator operation; existing active state and cadence must be preserved.
+
+## Deployment recovery completed through supported recreation
+
+The original in-place update continued to reject runtime-authority capture. The error explicitly prescribed recreation from a fresh authenticated owner turn. That supported flow succeeded without altering security checks: create an equivalent replacement **disabled**, preserve the same owner/tool cap/route/state/60-second cadence, disable the old supervisor, force-run the replacement, then enable it only after successful verification. The old task remains disabled for rollback; never enable both.
+
+The replacement now runs native source `107c40b823007761de37dc7cd682dadd76b10839`. Its forced scheduled execution succeeded and reported health `healthy`, all three source statuses `ok`, no pending notices and preserved ACTIVE state/initialized baselines. No token, host path, route ID or scheduler authority was exported.
+
+This resolves deployment through the documented recovery path; it does **not** establish that the in-place update authority-capture defect was repaired or identify the missing private grant. Existing root-cause investigation remains bounded and separate. Actual populated-event delivery, rich cards and reference actions are still outside the proven checkpoint.

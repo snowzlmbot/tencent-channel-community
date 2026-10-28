@@ -81,3 +81,9 @@
 
 - Source-isolation native QA/application build and strict host-health cloud regression passed. Real three-source probe and isolated existing-state transaction report healthy; no live failure/event was fabricated.
 - Deployment is not claimed complete: official scheduler update was refused for missing current runtime authority; the previously deployed 361879a task remains healthy and unchanged.
+
+## Source-isolation deployment
+
+- Deployed the verified source-isolated CLI through the tool-prescribed disabled-replacement authorization flow; preserve owner, finite tool cap, exact route, existing state and 60-second cadence.
+- Disable the old supervisor before forcing the replacement; enable the replacement only after healthy three-source scheduled execution. Keep the old task disabled as rollback, not a duplicate active worker.
+- Deployment recovered; no security-check removal or claim of an in-place authority-capture code fix.
