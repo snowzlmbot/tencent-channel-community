@@ -27,3 +27,5 @@
 
 - Recover five exact native notification MCP tool contracts and preserve native caveats separately from independently authored improvements.
 - Add recovered state DTOs plus versioned dedicated-state store with strict decoding, atomic writes, private files and nonblocking lifetime lock; no legacy-state migration or production activation.
+
+- Reject state and lock files not owned by the effective runtime user, in addition to symlink, hardlink and permission checks.

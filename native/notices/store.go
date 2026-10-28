@@ -31,7 +31,7 @@ func privateOpen(path string, flags int) (*os.File, error) {
 	}
 	f := os.NewFile(uintptr(fd), "state")
 	st, err := f.Stat()
-	if err != nil || !st.Mode().IsRegular() || st.Mode().Perm() != 0600 || st.Sys().(*syscall.Stat_t).Nlink != 1 {
+	if err != nil || !st.Mode().IsRegular() || st.Mode().Perm() != 0600 || st.Sys().(*syscall.Stat_t).Nlink != 1 || st.Sys().(*syscall.Stat_t).Uid != uint32(os.Geteuid()) {
 		f.Close()
 		return nil, ErrInvalid
 	}
@@ -118,7 +118,7 @@ func (s *StateStore) check() error {
 	if os.IsNotExist(err) {
 		return nil
 	}
-	if err != nil || !st.Mode().IsRegular() || st.Mode().Perm() != 0600 || st.Sys().(*syscall.Stat_t).Nlink != 1 {
+	if err != nil || !st.Mode().IsRegular() || st.Mode().Perm() != 0600 || st.Sys().(*syscall.Stat_t).Nlink != 1 || st.Sys().(*syscall.Stat_t).Uid != uint32(os.Geteuid()) {
 		return ErrInvalid
 	}
 	return nil
