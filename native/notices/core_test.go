@@ -3,6 +3,7 @@ package notices
 import (
 	"context"
 	"testing"
+	"time"
 )
 
 type fixture struct {
@@ -144,5 +145,24 @@ func TestEventFixtures(t *testing.T) {
 		if _, err := tracker.Accept(e); err == nil {
 			t.Fatal("invalid accepted")
 		}
+	}
+}
+
+func TestConfirmationExpires(t *testing.T) {
+	ctx := context.Background()
+	f := &fixture{route: Route{"session", "telegram", "-100", "42", "account"}, receipt: "receipt"}
+	m, _ := NewManager("session", f, f)
+	clock := time.Unix(1000, 0)
+	m.now = func() time.Time { return clock }
+	r, receipt, err := m.Test(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clock = clock.Add(10 * time.Minute)
+	if m.Confirm(ctx, r, receipt, true) == nil {
+		t.Fatal("expired confirmation accepted")
+	}
+	if m.Phase() == ACTIVE {
+		t.Fatal("expired activation")
 	}
 }

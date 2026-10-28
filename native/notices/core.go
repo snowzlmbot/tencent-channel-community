@@ -7,6 +7,7 @@ import (
 	"errors"
 	"strings"
 	"sync"
+	"time"
 	"unicode"
 )
 
@@ -57,13 +58,15 @@ type Manager struct {
 	phase    Phase
 	route    Route
 	receipt  string
+	expires  time.Time
+	now      func() time.Time
 }
 
 func NewManager(key string, resolver Resolver, delivery Delivery) (*Manager, error) {
 	if !valid(key) || resolver == nil || delivery == nil {
 		return nil, ErrInvalid
 	}
-	return &Manager{key: key, resolver: resolver, delivery: delivery, phase: OFF}, nil
+	return &Manager{key: key, resolver: resolver, delivery: delivery, phase: OFF, now: time.Now}, nil
 }
 func (m *Manager) Off() {
 	m.mu.Lock()
@@ -72,6 +75,7 @@ func (m *Manager) Off() {
 	m.phase = OFF
 	m.route = Route{}
 	m.receipt = ""
+	m.expires = time.Time{}
 }
 func (m *Manager) Phase() Phase { m.mu.Lock(); defer m.mu.Unlock(); return m.phase }
 func (m *Manager) resolve(ctx context.Context) (Route, error) {
@@ -93,6 +97,7 @@ func (m *Manager) Test(ctx context.Context) (Route, string, error) {
 	m.phase = OFF
 	m.route = Route{}
 	m.receipt = ""
+	m.expires = time.Time{}
 	m.mu.Unlock()
 	r, err := m.resolve(ctx)
 	if err != nil {
@@ -112,6 +117,7 @@ func (m *Manager) Test(ctx context.Context) (Route, string, error) {
 	}
 	m.route = r
 	m.receipt = receipt
+	m.expires = m.now().Add(10 * time.Minute)
 	m.phase = TESTED
 	return r, receipt, nil
 }
@@ -119,7 +125,7 @@ func (m *Manager) Test(ctx context.Context) (Route, string, error) {
 // Confirm is single-use and re-resolves the destination to reject stale routes.
 func (m *Manager) Confirm(ctx context.Context, r Route, receipt string, userConfirmed bool) error {
 	m.mu.Lock()
-	if !userConfirmed || r.Validate() != nil || m.phase != TESTED || m.route != r || m.receipt != receipt {
+	if !userConfirmed || r.Validate() != nil || m.phase != TESTED || m.route != r || m.receipt != receipt || !m.now().Before(m.expires) {
 		m.mu.Unlock()
 		return ErrInvalid
 	}
@@ -134,7 +140,7 @@ func (m *Manager) Confirm(ctx context.Context, r Route, receipt string, userConf
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if m.revision != rev || m.phase != TESTED {
+	if m.revision != rev || m.phase != TESTED || !m.now().Before(m.expires) {
 		return ErrInvalid
 	}
 	m.phase = ACTIVE

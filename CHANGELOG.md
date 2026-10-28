@@ -22,3 +22,5 @@
 - Owner authorized local binary analysis and independently authored native compatibility development.
 - Preserve the installed binary and existing login; distinguish recovered metadata/behavior from original source.
 - Add manual cloud validation for the native core and synthetic metadata recovery fixtures; do not upload original binaries or private state.
+
+- Bind native test receipt confirmation to a ten-minute expiry, including revalidation after route resolution; add deterministic expiry fixture.
