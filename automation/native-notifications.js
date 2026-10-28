@@ -1,3 +1,17 @@
+// Strict normalizer for the native message tool's documented direct details.
+// Do not unwrap arbitrary envelopes or substitute the requested topic as proof.
+function nativeTopicReceipt(sent, route) {
+  if (!sent || sent.ok !== true || !sent.receipt) return null;
+  const id = sent.messageId;
+  if (!(typeof id === 'string' && /^[1-9][0-9]{0,18}$/.test(id)) &&
+      !(typeof id === 'number' && Number.isSafeInteger(id) && id > 0)) return null;
+  if (!['string', 'number'].includes(typeof sent.chatId) ||
+      !['string', 'number'].includes(typeof sent.receipt.threadId) ||
+      String(sent.chatId) !== route.Target ||
+      String(sent.receipt.threadId) !== route.ThreadID) return null;
+  return 'telegram:' + String(id) + ':topic:' + route.ThreadID;
+}
+
 // Host-tool bridge for the independently reconstructed native Go engine.
 // Caller supplies a private config; no destination, credential or host path is
 // embedded here. Run only after explicit user confirmation of the native test.
@@ -52,12 +66,10 @@ async function superviseNative(config) {
     const sent = await message({ action: 'send', channel: route.Channel,
       accountId: route.AccountID, target: route.Target, threadId: route.ThreadID,
       message: texts[item.source], final: false });
-    if (!sent || sent.ok !== true || !sent.messageId ||
-        String(sent.chatId) !== route.Target ||
-        String(sent.receipt && sent.receipt.threadId) !== route.ThreadID) {
+    const receipt = nativeTopicReceipt(sent, route);
+    if (receipt === null) {
       throw new Error('Native notification delivery was not confirmed');
     }
-    const receipt = 'telegram:' + String(sent.messageId) + ':topic:' + route.ThreadID;
     const ack = await command('ack --state ' + quote(state) + ' --key ' +
       quote(item.delivery_id) + ' --receipt ' + quote(receipt));
     if (ack.acknowledged !== true) throw new Error('Native notification acknowledgement failed');

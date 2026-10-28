@@ -18,6 +18,7 @@ function fixture(options={}) {
       {success:true,route:options.route||route,outbox:options.outbox||[]})};
   },message:async args=>{
     sends.push(args);
+    if (options.replyOverride) return options.replyOverride;
     return {ok:!options.sendFail,messageId:'123',chatId:route.Target,receipt:{threadId:options.wrongTopic?'999':route.ThreadID}};
   }};
   const run=vm.runInNewContext(source+'\nsuperviseNative;',sandbox);
@@ -51,4 +52,19 @@ test('native operation failure cannot be silently marked successful',async()=>{
 test('bounded delivery leaves remaining durable records for next run',async()=>{
   const f=fixture({outbox:Array.from({length:10},(_,i)=>({...item,delivery_id:(i+1).toString(16).padStart(64,'0')}))});const result=await f.run(config);
   assert.equal(f.sends.length,8);assert.equal(result.state.deferred,2);assert.equal(f.commands.length,9);assert.equal(f.commands.length+f.sends.length,17);
+});
+
+test('receipt normalizer rejects wrappers, absent topic, wrong chat and invalid IDs',async()=>{
+  const replies=[
+    {result:{ok:true,messageId:'123',chatId:'-100',receipt:{threadId:'42'}}},
+    {ok:true,messageId:'123',chatId:'-100'},
+    {ok:true,messageId:'123',chatId:'-200',receipt:{threadId:'42'}},
+    {ok:true,messageId:{},chatId:'-100',receipt:{threadId:'42'}},
+    {ok:true,messageId:'0',chatId:'-100',receipt:{threadId:'42'}},
+    {ok:true,messageId:'123\n',chatId:'-100',receipt:{threadId:'42'}},
+  ];
+  for(const replyOverride of replies){
+    const f=fixture({outbox:[item],replyOverride});await assert.rejects(f.run(config));
+    assert.equal(f.commands.length,1);assert.equal(f.sends.length,1);
+  }
 });

@@ -69,3 +69,5 @@
 
 - Bound acknowledged delivery history to the newest 256 receipt records while retaining every pending item and all source checkpoints. Run compaction only after pending replay is empty; reject unproven/missing checkpoints and never compact native/legacy imported state.
 - Add an owned synthetic protocol integration test spanning HTTP validation, real parsers, three-source engine, private state persistence, failed-read rollback, restart replay and acknowledgment. This is not proof of a real new Tencent event.
+
+- Strictly normalize only documented direct message-tool receipts: positive Telegram message ID, confirmed exact chat and topic; reject wrappers, missing topics and object-valued IDs without acknowledging pending work.
