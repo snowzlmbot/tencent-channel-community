@@ -29,3 +29,5 @@
 - Add recovered state DTOs plus versioned dedicated-state store with strict decoding, atomic writes, private files and nonblocking lifetime lock; no legacy-state migration or production activation.
 
 - Reject state and lock files not owned by the effective runtime user, in addition to symlink, hardlink and permission checks.
+
+- Add five-source-stage native fetch protocol parsers and precise DM sequence handling; recover private-at-runtime authenticated Tencent HTTP contract, replacing the earlier bridge-only engineering limitation.

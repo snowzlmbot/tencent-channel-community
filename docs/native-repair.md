@@ -56,3 +56,7 @@ Until the host transport and real three-source notification integration are veri
 ## Fetch and durable-state reconstruction
 
 See [recovered fetch contract](reverse-fetch-contract.md) for five exact tool names/arguments, three-source response shapes and native cursor caveats. `native/notices/schema.go` models recovered DTOs; `store.go` persists a separate versioned compatibility state with per-route delivery records. These components do not write original CLI subscription files. Authenticated caller and host-delivery integrations remain separate gates; no all-source live readiness is claimed.
+
+## Authenticated runtime implementation path
+
+[The native HTTP contract](reverse-native-http-contract.md) recovers the direct read-only Tencent service request format. The independent caller will keep credentials private in memory, pin the endpoint and five read tools, retain controlled proxy/TLS verification, and reject redirects. This supersedes the prior vendor-bridge-only interpretation. No native API request or account data is included in public fixtures.
