@@ -66,7 +66,7 @@ func TestFetchEnvelopeAndErrors(t *testing.T) {
 			t.Fatal("root fallback failed")
 		}
 	}
-	c := &fixtureCaller{response: map[string]any{"structuredContent": map[string]any{}, "notices": []any{}}}
+	c := &fixtureCaller{response: map[string]any{"structuredContent": map[string]any{"unexpected": true}, "notices": []any{}}}
 	if _, err := (Fetcher{c}).ReadInteractions(ctx, ""); !errors.Is(err, ErrFetchPayload) {
 		t.Fatal("must not fallback from malformed structured payload")
 	}
@@ -98,8 +98,8 @@ func TestRequiredListsAtomicAndBounded(t *testing.T) {
 			t.Fatal("payload in error")
 		}
 	}
-	if _, err := fetchMaps(map[string]any{}, "noticeList"); err == nil {
-		t.Fatal("missing list accepted")
+	if got, err := fetchMaps(map[string]any{}, "noticeList"); err != nil || len(got) != 0 {
+		t.Fatal("observed empty protobuf map rejected")
 	}
 	max := make([]any, MaxFetchItems)
 	for i := range max {

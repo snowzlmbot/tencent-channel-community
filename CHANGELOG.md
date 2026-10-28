@@ -44,3 +44,5 @@
 - Add a synthetic assertion that envelope diagnostics never expose values or arbitrary dynamic identifiers.
 
 - Fix real authenticated empty responses: interaction uses omitted notices plus empty attachInfo/isFinish=true; system and DM use empty structuredContent maps. Keep malformed/null and unrecognized envelopes rejected.
+
+- Align old missing-list fixtures with the authenticated empty-map observation while retaining an unknown-envelope rejection fixture.
