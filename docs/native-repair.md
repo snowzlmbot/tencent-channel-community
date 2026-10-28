@@ -82,3 +82,9 @@ This is an independently rebuilt native engine and command, not an in-place patc
 ## Observed empty-response correction
 
 Value-free native diagnostics and a bounded authenticated schema-key precheck confirmed that the empty interaction response contains an opaque string `attachInfo` and `isFinish=true` without `notices`; empty system/DM responses contain an empty `structuredContent` map. The parser now handles these exact protobuf-style empty cases after HTTP/RPC validation. Present null/wrong-type lists and unknown envelopes remain rejected. This is real empty-account compatibility evidence, not proof of populated event delivery.
+
+## Verified live checkpoint
+
+Exact executable source: `e154b8f2ac8a7b4c7832709cba38521ac9e45228`. [Cloud tests and development application build](https://github.com/snowzlmbot/tencent-channel-community/actions/runs/40710673172) succeeded; the checksum-verified standalone application then passed an authenticated macOS read-only probe for interaction, system and DM-list sources. This account returned zero items/channels for all three, so populated message handling and a real new-event delivery cycle are still unproven.
+
+A native route-test request was subsequently delivered using the approved host messaging tool; the actual delivery receipt was recorded and native state is `TESTED`, not `ACTIVE`. User confirmation and a background host supervisor are still required. The original installed vendor executable, existing login and original subscription files remain unchanged. No rich-card or reference-action parity is claimed.

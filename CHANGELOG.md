@@ -48,3 +48,8 @@
 - Align old missing-list fixtures with the authenticated empty-map observation while retaining an unknown-envelope rejection fixture.
 
 - Runtime pagination metadata confirms a nonempty opaque cursor may accompany an empty finished interaction list; validate its type, not its value, without logging it.
+
+## Live development verification checkpoint
+
+- Exact source e154b8f passed manual cloud race/static checks and application build, then real authenticated interaction/system/DM-list reads on macOS (all empty for this account).
+- Native route test delivered through an approved host tool and actual receipt persisted as TESTED; no activation, background supervisor or real new-event proof yet.
