@@ -248,6 +248,35 @@ func (e *Engine) pollDM(ctx context.Context, s *SchemaEnvelope, current []DMSnap
 			previous = append(previous, DMSnapshotEntry{DMKey{b.GuildID, b.ChannelID}, b.LastSeq, b.LastTime})
 		}
 	}
+	// Once DM monitoring is initialized, a newly observed channel must not
+	// silently consume its first update. Emit one generic channel-update notice
+	// without fetching historical messages. Cold account initialization remains
+	// silent, and channel sequence cursors prevent repeats after acknowledgement.
+	if s.Initialized[DM] {
+		known := make(map[DMKey]bool, len(previous))
+		for _, old := range previous {
+			known[old.Key] = true
+		}
+		if _, err := snapshotIndex(current); err != nil {
+			return err
+		}
+		for _, entry := range current {
+			if known[entry.Key] {
+				continue
+			}
+			seq, _ := decimal(entry.Seq)
+			if seq.Sign() == 0 {
+				continue
+			}
+			key, err := opaque(DM, "new-channel", entry.Key.GuildID, entry.Key.ChannelID, seq.String())
+			if err != nil {
+				return err
+			}
+			if err := e.queue(s, DM, key); err != nil {
+				return err
+			}
+		}
+	}
 	ranges, err := PlanDM(current, previous, s.Initialized[DM])
 	if err != nil {
 		return err

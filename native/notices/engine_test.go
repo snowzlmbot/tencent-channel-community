@@ -136,7 +136,7 @@ func TestEngineIndependentColdSourcesAndDMComposite(t *testing.T) {
 	f.snapshot = []DMSnapshotEntry{{DMKey{"guild", "a"}, "9007199254740994", "11"}, {DMKey{"guild", "b"}, "1", "10"}, {DMKey{"new", "a"}, "999", "11"}}
 	f.details = []map[string]any{{"msgSeq": "9007199254740994", "msgTime": "11"}}
 	next, p, err := e.Poll(ctx, s)
-	if err != nil || len(p) != 2 {
+	if err != nil || len(p) != 3 {
 		t.Fatalf("warm/cold sources %v %v", p, err)
 	}
 	if len(f.ranges) != 1 || f.ranges[0].Key != (DMKey{"guild", "a"}) || f.ranges[0].BeginSeq != "9007199254740994" {
@@ -239,5 +239,38 @@ func TestEngineLedgerBoundAndMalformedDM(t *testing.T) {
 	got, p, err := e.Poll(ctx, s)
 	if err == nil || len(p) != 0 || !reflect.DeepEqual(got, s) || len(s.Deliveries) != MaxLedger {
 		t.Fatal("ledger silently evicted")
+	}
+}
+
+func TestWarmNewDMChannelNotifiesWithoutHistory(t *testing.T) {
+	ctx := context.Background()
+	f := &engineFixture{}
+	e := makeEngine(t, f)
+	state, pending, err := e.Poll(ctx, engineState())
+	if err != nil || len(pending) != 0 {
+		t.Fatal("cold baseline failed", err)
+	}
+	f.snapshot = []DMSnapshotEntry{{DMKey{"new-guild", "new-channel"}, "1", "10"}}
+	updated, pending, err := e.Poll(ctx, state)
+	if err != nil || len(pending) != 1 || pending[0].Source != DM || len(f.ranges) != 0 {
+		t.Fatal("first channel update silently lost or history fetched", err)
+	}
+	if len(state.Deliveries) != 0 {
+		t.Fatal("input mutated")
+	}
+	acked, err := e.AckDelivery(updated, pending[0].Key, "opaque-route", "tool-receipt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, again, err := e.Poll(ctx, acked)
+	if err != nil || len(again) != 0 || len(f.ranges) != 0 {
+		t.Fatal("new channel notice repeated", err)
+	}
+}
+func TestColdDMChannelsRemainSilent(t *testing.T) {
+	f := &engineFixture{snapshot: []DMSnapshotEntry{{DMKey{"old", "channel"}, "999", "10"}}}
+	_, pending, err := makeEngine(t, f).Poll(context.Background(), engineState())
+	if err != nil || len(pending) != 0 || len(f.ranges) != 0 {
+		t.Fatal("cold history emitted", err)
 	}
 }

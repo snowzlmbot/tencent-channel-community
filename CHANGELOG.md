@@ -61,3 +61,8 @@
 - First scheduler-forced run succeeded and initialized all three baselines silently; no actual new-event delivery has yet been observed.
 
 - Correct the supervisor tool-budget fixture to distinguish nine exec calls from eight message calls (17 total), using distinct synthetic outbox IDs. No runtime behavior changed.
+
+## Reliability follow-up
+
+- Fix a missing-update case: after DM monitoring has initialized, a newly observed nonempty channel now queues one generic channel-update notice instead of silently baselining it. Cold initialization is still silent; no message history is fetched for the new channel.
+- Add fixtures for first-channel update, receipt acknowledgment, no repeats and cold-history suppression. Existing active executable is not replaced until cloud validation and isolated runtime verification pass.
