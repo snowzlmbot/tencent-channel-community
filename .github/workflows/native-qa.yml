@@ -30,3 +30,6 @@ jobs:
         run: go test -race -count=1 ./...
       - name: Native static checks
         run: go vet ./...
+      - name: Cross-compile command without publishing or installing
+        run: |
+          GOOS=darwin GOARCH=arm64 go build -trimpath -o "$RUNNER_TEMP/tencent-channel-native" ./cmd/tencent-channel-native

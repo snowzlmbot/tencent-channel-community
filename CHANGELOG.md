@@ -31,3 +31,6 @@
 - Reject state and lock files not owned by the effective runtime user, in addition to symlink, hardlink and permission checks.
 
 - Add five-source-stage native fetch protocol parsers and precise DM sequence handling; recover private-at-runtime authenticated Tencent HTTP contract, replacing the earlier bridge-only engineering limitation.
+
+- Add an independently authored, fixed-endpoint authenticated native read client with private dotenv runtime credential loading, five-tool allowlist, verified TLS/proxy transport, no redirects, and bounded sanitized responses.
+- Add a bounded standalone `tencent-channel-native probe` command that reports only source counts and never activates subscriptions; cloud cross-compilation and explicitly approved development-application packaging are separate from test evidence and production installation.

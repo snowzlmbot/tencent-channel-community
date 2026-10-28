@@ -1,0 +1,41 @@
+name: Native development package
+on:
+  workflow_dispatch:
+    inputs:
+      approve_development_package:
+        description: 'Approve packaging the read-only development probe (not notification activation)'
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  package:
+    if: inputs.approve_development_package
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache: false
+      - name: Verify exact package source
+        working-directory: native
+        run: |
+          go test -race -count=1 ./...
+          go vet ./...
+      - name: Build development application only
+        working-directory: native
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/package"
+          GOOS=darwin GOARCH=arm64 go build -trimpath -o "$GITHUB_WORKSPACE/package/tencent-channel-native" ./cmd/tencent-channel-native
+          cd "$GITHUB_WORKSPACE/package"
+          sha256sum tencent-channel-native > tencent-channel-native.sha256
+      - name: Stage application for authorized deployment, not test evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-development-application
+          path: package/tencent-channel-native*
+          retention-days: 3
+          if-no-files-found: error
