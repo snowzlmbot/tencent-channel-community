@@ -49,6 +49,6 @@ test('native operation failure cannot be silently marked successful',async()=>{
   const f=fixture({execFail:true});await assert.rejects(f.run(config));assert.equal(f.sends.length,0);
 });
 test('bounded delivery leaves remaining durable records for next run',async()=>{
-  const f=fixture({outbox:Array.from({length:10},()=>item)});const result=await f.run(config);
-  assert.equal(f.sends.length,8);assert.equal(result.state.deferred,2);assert.equal(f.commands.length,17);
+  const f=fixture({outbox:Array.from({length:10},(_,i)=>({...item,delivery_id:(i+1).toString(16).padStart(64,'0')}))});const result=await f.run(config);
+  assert.equal(f.sends.length,8);assert.equal(result.state.deferred,2);assert.equal(f.commands.length,9);assert.equal(f.commands.length+f.sends.length,17);
 });

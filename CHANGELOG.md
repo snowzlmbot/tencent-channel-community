@@ -59,3 +59,5 @@
 - After explicit user receipt confirmation, native route activation advanced from TESTED to ACTIVE.
 - Add a bounded host-tool supervisor template and synthetic receipt/route/privacy contracts. It polls the native three-source engine, sends only fixed generic messages through the approved tool, and acknowledges only confirmed exact-topic receipts. Quiet checks do not run an LLM.
 - First scheduler-forced run succeeded and initialized all three baselines silently; no actual new-event delivery has yet been observed.
+
+- Correct the supervisor tool-budget fixture to distinguish nine exec calls from eight message calls (17 total), using distinct synthetic outbox IDs. No runtime behavior changed.
