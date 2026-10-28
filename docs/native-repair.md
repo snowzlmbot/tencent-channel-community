@@ -22,9 +22,13 @@ The requested target is the native CLI notification engine, not the independent 
 
 Use a manually dispatched cloud workflow to test owner/session routing, topic isolation, authentication failure, receipt failure, two-step activation, duplicate/retry semantics and all supported notice sources. Credential-free fixtures do not establish real delivery. Final acceptance additionally needs an authenticated native test message, user confirmation, subscription status showing the exact authorized route, and a real notification lifecycle.
 
-## Needed input
+## Revised approach: authorized binary analysis and independent reconstruction
 
-An authorized source archive/repository matching the native CLI build, with the applicable license/build instructions, or a vendor-supported native host delivery integration. Neither a documentation fork nor extra permissions over local files supplies the missing implementation.
+The owner has now explicitly requested analysis of the installed native CLI and secondary development, rather than waiting for original source. Missing source is no longer the only engineering path. Recover Go metadata and selected control/type contracts from the installed binary, then author a separately buildable compatibility implementation.
+
+Recovered names, layouts and control flow are **not original source code**. Decompiled pseudocode can omit types, semantics and source-level constructs. Do not claim a lossless restoration or infer native binary redistribution rights from the Skill README badge. Original binaries, bulk disassembly and embedded absolute developer paths stay local; public code is independently authored, with provenance and verification limits documented.
+
+The original installed CLI and credentials remain unchanged until reconstructed behavior, supported host integration and real native delivery have passed their gates. The independent native core does not count as an integrated CLI or enabled subscription.
 
 ## Native binary audit findings
 
@@ -39,3 +43,12 @@ Likely source-level patch points, based on compiled function/source metadata:
 - `internal/subscription/daemon.go` / `daemon_unix.go`: persistence and inheritance across worker restart and guard recovery.
 
 These are static investigation findings, not recovered buildable source or proof of a running fix. No binary patching, subscription-state editing, daemon startup or real message delivery was performed during this audit. There is still no supported first-activation route injection flag identified.
+
+## Work streams
+
+- `scripts/recover_go_metadata.py`: dependency-free recovery of selected Go function metadata from the installed Mach-O; synthetic parser tests in cloud.
+- `docs/reverse-notification-contract.md`: selected behavioral/type findings, with confirmed versus inferred facts.
+- `native/`: independently authored Go route/test-confirmation and source-watermark core; no guessed Tencent endpoint or shell delivery transport.
+- `.github/workflows/native-qa.yml`: manual cloud parser tests, native race tests and static checks; no binary or account credentials uploaded.
+
+Until the host transport and real three-source notification integration are verified, this remains development work, not completed native repair.

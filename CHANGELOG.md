@@ -16,3 +16,9 @@
 - Document native routing, authorized host delivery, full-source semantics and acceptance requirements in `docs/native-repair.md`.
 
 - Audit confirms native shell-template extension exists but does not remove legacy route/active-subscription gates; document precise compiled source patch points without claiming a working native patch.
+
+## Native reconstruction development
+
+- Owner authorized local binary analysis and independently authored native compatibility development.
+- Preserve the installed binary and existing login; distinguish recovered metadata/behavior from original source.
+- Add manual cloud validation for the native core and synthetic metadata recovery fixtures; do not upload original binaries or private state.
