@@ -358,6 +358,15 @@ func (e *Engine) Poll(ctx context.Context, s SchemaEnvelope) (SchemaEnvelope, []
 	if err != nil {
 		return s, nil, err
 	}
+	// Pending work is replayed above and never compacted. Only previously
+	// acknowledged history may be bounded; persisted source checkpoints keep
+	// those events suppressed after their receipt records are compacted.
+	if len(out.Deliveries) > MaxDeliveredRetained {
+		out, err = CompactDelivered(out, e.routeKey)
+		if err != nil {
+			return s, nil, err
+		}
+	}
 	interactions, err := e.fetch.ReadInteractions(ctx, "")
 	if err != nil {
 		return s, nil, err

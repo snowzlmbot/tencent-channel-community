@@ -274,3 +274,42 @@ func TestColdDMChannelsRemainSilent(t *testing.T) {
 		t.Fatal("cold history emitted", err)
 	}
 }
+
+func TestEngineCompactsAcknowledgedHistoryWithoutReplay(t *testing.T) {
+	ctx := context.Background()
+	item := map[string]any{"createTs": "100", "noticeId": "same-boundary"}
+	f := &engineFixture{system: []map[string]any{item}}
+	e := makeEngine(t, f)
+	state, _, err := e.Poll(ctx, engineState())
+	if err != nil {
+		t.Fatal(err)
+	}
+	event, _ := opaque(System, int64(100), item)
+	oldKey, _ := opaque("opaque-route", System, event)
+	for i := 0; i < MaxLedger; i++ {
+		key, _ := opaque("acknowledged", i)
+		state.Deliveries[key] = DeliveryRecord{RouteKey: "opaque-route", Source: System, EventKey: key, State: DeliveryDelivered, Receipt: "fixture-receipt", UpdatedAt: time.Unix(int64(i+1), 0)}
+	}
+	// This actual same-watermark record is the oldest and must be compacted;
+	// the source checkpoint, not the delivery history, prevents its replay.
+	for key := range state.Deliveries {
+		delete(state.Deliveries, key)
+		break
+	}
+	state.Deliveries[oldKey] = DeliveryRecord{RouteKey: "opaque-route", Source: System, EventKey: event, State: DeliveryDelivered, Receipt: "fixture-receipt", UpdatedAt: time.Unix(0, 0)}
+	next, pending, err := e.Poll(ctx, state)
+	if err != nil || len(pending) != 0 || len(next.Deliveries) != MaxDeliveredRetained {
+		t.Fatal("compaction failed or replayed", err)
+	}
+	if _, exists := next.Deliveries[oldKey]; exists {
+		t.Fatal("old receipt not compacted")
+	}
+	if len(state.Deliveries) != MaxLedger {
+		t.Fatal("input mutated")
+	}
+	f.system = append(f.system, map[string]any{"createTs": "101", "noticeId": "new"})
+	_, pending, err = e.Poll(ctx, next)
+	if err != nil || len(pending) != 1 {
+		t.Fatal("ledger still permanently exhausted", err)
+	}
+}

@@ -66,3 +66,6 @@
 
 - Fix a missing-update case: after DM monitoring has initialized, a newly observed nonempty channel now queues one generic channel-update notice instead of silently baselining it. Cold initialization is still silent; no message history is fetched for the new channel.
 - Add fixtures for first-channel update, receipt acknowledgment, no repeats and cold-history suppression. Existing active executable is not replaced until cloud validation and isolated runtime verification pass.
+
+- Bound acknowledged delivery history to the newest 256 receipt records while retaining every pending item and all source checkpoints. Run compaction only after pending replay is empty; reject unproven/missing checkpoints and never compact native/legacy imported state.
+- Add an owned synthetic protocol integration test spanning HTTP validation, real parsers, three-source engine, private state persistence, failed-read rollback, restart replay and acknowledgment. This is not proof of a real new Tencent event.

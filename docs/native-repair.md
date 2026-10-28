@@ -100,3 +100,9 @@ This is native collection/state plus approved host-tool delivery, not an in-plac
 ## Follow-up: first observed DM channel
 
 The initial implementation silently baselined every newly discovered channel, even after account-level DM monitoring had initialized. That could hide the first update in a newly created conversation. The revised engine queues one generic update for a newly observed channel with a nonzero sequence, then records its cursor atomically with the outbox. It does not retrieve historical content, and initial account setup stays silent. This is a channel-update signal, not a claim about an exact new-message count.
+
+## Follow-up: acknowledged ledger retention
+
+The original 1,000-record guard could permanently halt polling once delivery history filled. The revised engine keeps all pending work and the newest 256 acknowledged records, leaving persisted source watermarks/boundary IDs and DM cursors unchanged. Compaction occurs only after pending replay is empty. It relies on this reconstructed engine's existing checkpoint-before-send / receipt-before-ack invariant and validates per-source checkpoint presence; opaque event keys cannot establish provenance for arbitrary imported, reset or corrupted state. No migration/import or native vendor-state cleanup is performed. Missing checkpoints still fail closed rather than discarding uncertain history.
+
+Source-level fault isolation remains a separate availability limitation: the current atomic poll retains all source state on any read/parse failure, which is safe for retries but can block healthy sources during a persistent malformed result. Rich cards, stable interaction identities and actual populated-event proof are not represented as completed by these reliability patches.
