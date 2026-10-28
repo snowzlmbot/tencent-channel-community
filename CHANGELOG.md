@@ -43,6 +43,8 @@
 - Integrate independent native route-test, actual-host-receipt recording, explicit activation, durable three-source poll/outbox, exact receipt acknowledgments, status and off commands. Message delivery stays in approved host tools; no shell messaging or legacy session index is introduced.
 - Add a synthetic assertion that envelope diagnostics never expose values or arbitrary dynamic identifiers.
 
-- Fix real authenticated empty responses: interaction uses omitted notices plus empty attachInfo/isFinish=true; system and DM use empty structuredContent maps. Keep malformed/null and unrecognized envelopes rejected.
+- Fix real authenticated empty responses: interaction uses omitted notices plus string attachInfo/isFinish=true; system and DM use empty structuredContent maps. Keep malformed/null and unrecognized envelopes rejected.
 
 - Align old missing-list fixtures with the authenticated empty-map observation while retaining an unknown-envelope rejection fixture.
+
+- Runtime pagination metadata confirms a nonempty opaque cursor may accompany an empty finished interaction list; validate its type, not its value, without logging it.

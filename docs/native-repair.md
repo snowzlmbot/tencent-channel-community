@@ -81,4 +81,4 @@ This is an independently rebuilt native engine and command, not an in-place patc
 
 ## Observed empty-response correction
 
-Value-free native diagnostics and a bounded authenticated schema-key precheck confirmed that the empty interaction response contains `attachInfo` and `isFinish` without `notices`; empty system/DM responses contain an empty `structuredContent` map. The parser now handles these exact protobuf-style empty cases after HTTP/RPC validation. Present null/wrong-type lists and unknown envelopes remain rejected. This is real empty-account compatibility evidence, not proof of populated event delivery.
+Value-free native diagnostics and a bounded authenticated schema-key precheck confirmed that the empty interaction response contains an opaque string `attachInfo` and `isFinish=true` without `notices`; empty system/DM responses contain an empty `structuredContent` map. The parser now handles these exact protobuf-style empty cases after HTTP/RPC validation. Present null/wrong-type lists and unknown envelopes remain rejected. This is real empty-account compatibility evidence, not proof of populated event delivery.

@@ -260,7 +260,7 @@ func TestObservedAuthenticatedEmptyEnvelopes(t *testing.T) {
 			t.Fatal("empty protobuf map rejected")
 		}
 	}
-	got, err := fetchMaps(map[string]any{"attachInfo": "", "isFinish": true}, "notices")
+	got, err := fetchMaps(map[string]any{"attachInfo": "synthetic-opaque-cursor", "isFinish": true}, "notices")
 	if err != nil || len(got) != 0 {
 		t.Fatal("finished interaction envelope rejected")
 	}

@@ -55,9 +55,9 @@ func fetchMaps(payload map[string]any, key string) ([]map[string]any, error) {
 			return []map[string]any{}, nil
 		}
 		if key == "notices" && len(payload) == 2 {
-			cursor, cursorOK := payload["attachInfo"].(string)
+			_, cursorOK := payload["attachInfo"].(string)
 			finished, finishedOK := payload["isFinish"].(bool)
-			if cursorOK && cursor == "" && finishedOK && finished {
+			if cursorOK && finishedOK && finished {
 				return []map[string]any{}, nil
 			}
 		}
