@@ -88,3 +88,14 @@ test('invalid health metadata fails before message acknowledgment',async()=>{
  const f=fixture({outbox:[item],health:{status:'degraded',sources:{interaction:'ok',system:'private-error',dm:'ok'}}});
  await assert.rejects(f.run(config));assert.equal(f.sends.length,0);assert.equal(f.commands.length,1);
 });
+
+test('required health and internally consistent labels cannot be bypassed',async()=>{
+ const missing=fixture();await assert.rejects(missing.run({...config,requireHealth:true}));
+ for(const health of [
+  {status:'healthy',sources:{interaction:'ok',system:'failed',dm:'ok'}},
+  {status:'replay',sources:{interaction:'ok',system:'deferred',dm:'deferred'}},
+  {status:'degraded',sources:{interaction:'failed',system:'failed',dm:'failed'}},
+ ]) {
+  const f=fixture({health,outbox:[item]});await assert.rejects(f.run(config));assert.equal(f.sends.length,0);
+ }
+});

@@ -60,6 +60,15 @@ async function superviseNative(config) {
       !['interaction','system','dm'].every(k => ['ok','failed','deferred'].includes(health.sources[k])))) {
     throw new Error('Invalid native source health labels');
   }
+  if (config.requireHealth === true && health.status === 'legacy') {
+    throw new Error('Native source health is required');
+  }
+  const labels = Object.values(health.sources);
+  if (health.status === 'healthy' && !labels.every(x => x === 'ok') ||
+      health.status === 'replay' && !labels.every(x => x === 'deferred') ||
+      health.status === 'degraded' && (!labels.includes('ok') || labels.every(x => x === 'ok'))) {
+    throw new Error('Native source health status is inconsistent');
+  }
   const texts = {
     interaction: '主人，腾讯频道有新的互动通知。',
     system: '主人，腾讯频道有新的系统通知。',

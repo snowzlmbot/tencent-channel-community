@@ -76,3 +76,5 @@
 
 - Reconcile current scheduler state: the existing supervisor already points at 361879a and reports successful checks; avoid repeating the previously blocked deployment.
 - Add native CLI source-health reporting and bounded generic partial-source warnings. Healthy-source deliveries and receipt acknowledgements remain independent of the warning; failed-source progress must remain retryable.
+
+- Require consistent healthy/degraded/replay source labels at the host bridge, with an explicit required-health deployment gate for the new native runtime.
