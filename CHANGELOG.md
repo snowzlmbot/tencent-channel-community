@@ -78,3 +78,6 @@
 - Add native CLI source-health reporting and bounded generic partial-source warnings. Healthy-source deliveries and receipt acknowledgements remain independent of the warning; failed-source progress must remain retryable.
 
 - Require consistent healthy/degraded/replay source labels at the host bridge, with an explicit required-health deployment gate for the new native runtime.
+
+- Source-isolation native QA/application build and strict host-health cloud regression passed. Real three-source probe and isolated existing-state transaction report healthy; no live failure/event was fabricated.
+- Deployment is not claimed complete: official scheduler update was refused for missing current runtime authority; the previously deployed 361879a task remains healthy and unchanged.
