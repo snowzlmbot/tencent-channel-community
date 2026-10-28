@@ -39,3 +39,8 @@
 - Add the reconstructed three-source atomic engine with separate durable pending ledger and explicit delivery acknowledgment; native installation and activation remain unchanged.
 
 - Isolated live diagnostics confirmed authenticated service acceptance but interaction response-shape mismatch. Add fixed-key/type-only diagnostics to inspect envelopes without disclosing notification bodies, values or dynamic identifiers.
+
+- Integrate independent native route-test, actual-host-receipt recording, explicit activation, durable three-source poll/outbox, exact receipt acknowledgments, status and off commands. Message delivery stays in approved host tools; no shell messaging or legacy session index is introduced.
+- Add a synthetic assertion that envelope diagnostics never expose values or arbitrary dynamic identifiers.
+
+- Fix real authenticated empty responses: interaction uses omitted notices plus empty attachInfo/isFinish=true; system and DM use empty structuredContent maps. Keep malformed/null and unrecognized envelopes rejected.

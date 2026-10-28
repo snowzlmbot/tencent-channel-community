@@ -86,6 +86,7 @@ type DeliveryRecord struct {
 // SchemaEnvelope is NEW compatibility state. It is not a legacy state file and
 // deliberately excludes Manager authorization, secrets and test challenges.
 type SchemaEnvelope struct {
+	Control     *ControlState             `json:"control,omitempty"`
 	Version     int                       `json:"version"`
 	Baseline    Baseline                  `json:"baseline"`
 	Deliveries  map[string]DeliveryRecord `json:"deliveries"`
@@ -93,6 +94,9 @@ type SchemaEnvelope struct {
 }
 
 func (s SchemaEnvelope) validate() error {
+	if s.Control.Validate() != nil {
+		return ErrInvalid
+	}
 	if s.Version != SchemaVersion || s.Deliveries == nil || s.Initialized == nil || s.Baseline.Sources == nil {
 		return ErrInvalid
 	}

@@ -252,3 +252,21 @@ func TestDigestCategoriesAndSeconds(t *testing.T) {
 		}
 	}
 }
+
+func TestObservedAuthenticatedEmptyEnvelopes(t *testing.T) {
+	for _, key := range []string{"notices", "noticeList", "rptMyDirectMessageInfo"} {
+		got, err := fetchMaps(map[string]any{}, key)
+		if err != nil || len(got) != 0 {
+			t.Fatal("empty protobuf map rejected")
+		}
+	}
+	got, err := fetchMaps(map[string]any{"attachInfo": "", "isFinish": true}, "notices")
+	if err != nil || len(got) != 0 {
+		t.Fatal("finished interaction envelope rejected")
+	}
+	for _, p := range []map[string]any{{"isFinish": false, "attachInfo": ""}, {"unrecognized": "ignored"}, {"noticeList": nil}} {
+		if _, err := fetchMaps(p, "noticeList"); err == nil {
+			t.Fatal("malformed envelope accepted")
+		}
+	}
+}

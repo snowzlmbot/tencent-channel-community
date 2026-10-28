@@ -44,9 +44,25 @@ func (f Fetcher) call(ctx context.Context, tool string, args map[string]any) (ma
 	return root, nil
 }
 
-// Required lists must be present and []any, including legitimate empty []any{}.
+// Present lists must be []any; observed protobuf-style empty omissions are accepted.
 // Missing/null lists and malformed elements fail atomically (never partial).
 func fetchMaps(payload map[string]any, key string) ([]map[string]any, error) {
+	// Real authenticated responses use protobuf-style omission for empty lists.
+	// A fully empty, already validated structuredContent map is a legitimate
+	// empty system/DM/interaction result. Interaction pagination is explicit.
+	if _, exists := payload[key]; !exists {
+		if len(payload) == 0 {
+			return []map[string]any{}, nil
+		}
+		if key == "notices" && len(payload) == 2 {
+			cursor, cursorOK := payload["attachInfo"].(string)
+			finished, finishedOK := payload["isFinish"].(bool)
+			if cursorOK && cursor == "" && finishedOK && finished {
+				return []map[string]any{}, nil
+			}
+		}
+		return nil, ErrFetchPayload
+	}
 	list, ok := payload[key].([]any)
 	if !ok || list == nil || len(list) > MaxFetchItems {
 		return nil, ErrFetchPayload

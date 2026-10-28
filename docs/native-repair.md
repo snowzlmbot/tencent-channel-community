@@ -70,3 +70,15 @@ Cloud QA tests and cross-compiles the exact source. The separate `Native develop
 ## First isolated runtime probe
 
 The cloud-built development application was checksum-verified and deployed only under an ignored local directory. Its first read-only run failed at the interaction stage; no source data or credential was printed and no subscription was activated. Sanitized stage diagnostics are being added to distinguish protocol-shape, transport and credential failures before further runtime checks. The separately reconstructed engine is not yet connected to active delivery.
+
+## Native command / authorized host bridge
+
+The independent native command now includes `route-test`, `record-test`, `enable --confirm`, `once`, `ack`, `status` and `off`. It owns a separate private state file. Route inputs must come from the actual trusted conversation context, not guessed IDs. The command never sends platform messages itself.
+
+`route-test` persists a ten-minute challenge before emitting its generic test request. The authorized host sends the request through its available messaging tool, then records the actual receipt with `record-test`. Only explicit user confirmation permits `enable`. Each `once` persists the three-source engine's generic outbox before output; after confirmed messaging-tool delivery, `ack` records the exact item/route receipt. Receipts are trusted-host inputs, not cryptographically verified by this standalone process.
+
+This is an independently rebuilt native engine and command, not an in-place patch of the original vendor binary. Generic update notices do not yet reproduce rich cards, notification reference actions or precise native cleaning parity. No active subscription or background host supervisor has been enabled during development.
+
+## Observed empty-response correction
+
+Value-free native diagnostics and a bounded authenticated schema-key precheck confirmed that the empty interaction response contains `attachInfo` and `isFinish` without `notices`; empty system/DM responses contain an empty `structuredContent` map. The parser now handles these exact protobuf-style empty cases after HTTP/RPC validation. Present null/wrong-type lists and unknown envelopes remain rejected. This is real empty-account compatibility evidence, not proof of populated event delivery.
