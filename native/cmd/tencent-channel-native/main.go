@@ -13,13 +13,17 @@ import (
 // This bounded probe is not an installer, daemon or subscription activation.
 // It emits no raw notices, identifiers, credential values or response bodies.
 func main() {
-	if len(os.Args) != 2 || os.Args[1] != "probe" {
+	if len(os.Args) != 2 || os.Args[1] != "probe" && os.Args[1] != "probe-structure" {
 		_ = json.NewEncoder(os.Stderr).Encode(map[string]any{"success": false, "stage": "usage", "message": "use: tencent-channel-native probe"})
 		os.Exit(2)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	caller := notices.NewNativeHTTPCaller(notices.DefaultCredential)
+	if os.Args[1] == "probe-structure" {
+		_ = json.NewEncoder(os.Stdout).Encode(probeStructure(ctx, caller))
+		return
+	}
 	f := notices.Fetcher{Caller: caller}
 	counts := map[string]int{}
 	interactions, err := f.ReadInteractions(ctx, "")

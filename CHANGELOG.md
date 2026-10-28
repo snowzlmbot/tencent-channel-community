@@ -37,3 +37,5 @@
 
 - First isolated live probe failed at the interaction stage; add closed, sanitized credential/transport/HTTP/envelope/shape error categories rather than printing raw request, credential or response details.
 - Add the reconstructed three-source atomic engine with separate durable pending ledger and explicit delivery acknowledgment; native installation and activation remain unchanged.
+
+- Isolated live diagnostics confirmed authenticated service acceptance but interaction response-shape mismatch. Add fixed-key/type-only diagnostics to inspect envelopes without disclosing notification bodies, values or dynamic identifiers.
