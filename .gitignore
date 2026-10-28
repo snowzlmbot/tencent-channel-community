@@ -130,3 +130,10 @@ dmypy.json
 *~
 .DS_Store
 scripts/feed/proto/feed_mcp.proto
+
+# Local runtime/security assets must never be published
+local/
+.runtime/
+graphify-out/
+*.pem
+*.key
