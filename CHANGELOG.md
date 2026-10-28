@@ -53,3 +53,9 @@
 
 - Exact source e154b8f passed manual cloud race/static checks and application build, then real authenticated interaction/system/DM-list reads on macOS (all empty for this account).
 - Native route test delivered through an approved host tool and actual receipt persisted as TESTED; no activation, background supervisor or real new-event proof yet.
+
+## Confirmed activation
+
+- After explicit user receipt confirmation, native route activation advanced from TESTED to ACTIVE.
+- Add a bounded host-tool supervisor template and synthetic receipt/route/privacy contracts. It polls the native three-source engine, sends only fixed generic messages through the approved tool, and acknowledges only confirmed exact-topic receipts. Quiet checks do not run an LLM.
+- First scheduler-forced run succeeded and initialized all three baselines silently; no actual new-event delivery has yet been observed.

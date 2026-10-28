@@ -88,3 +88,11 @@ Value-free native diagnostics and a bounded authenticated schema-key precheck co
 Exact executable source: `e154b8f2ac8a7b4c7832709cba38521ac9e45228`. [Cloud tests and development application build](https://github.com/snowzlmbot/tencent-channel-community/actions/runs/40710673172) succeeded; the checksum-verified standalone application then passed an authenticated macOS read-only probe for interaction, system and DM-list sources. This account returned zero items/channels for all three, so populated message handling and a real new-event delivery cycle are still unproven.
 
 A native route-test request was subsequently delivered using the approved host messaging tool; the actual delivery receipt was recorded and native state is `TESTED`, not `ACTIVE`. User confirmation and a background host supervisor are still required. The original installed vendor executable, existing login and original subscription files remain unchanged. No rich-card or reference-action parity is claimed.
+
+## Activated supervision
+
+The user explicitly confirmed receipt of the native test and the stated 60-second cadence. Native control is now ACTIVE, and a single isolated headless script automation supervises the existing cloud-built program. Its first forced run succeeded, establishing all three empty baselines without historical notifications.
+
+`automation/native-notifications.js` documents the host bridge; private executable/state paths and the actual route are supplied separately, never committed. The running payload uses the same bounded sequence: native `once` → exact destination validation → approved message tool → actual receipt validation → native `ack`. Each run handles at most eight pending records; remaining entries stay durable. There is no shell messaging, raw notification content, credential export or model call on a quiet run.
+
+This is native collection/state plus approved host-tool delivery, not an in-place vendor-binary patch. If the network, credential or receipt check fails, the job fails and pending items are not acknowledged; scheduler backoff/failure alerts apply. To stop, remove/disable the exact supervisor automation and run native `off` against its own state. Rich-card/reference parity and a populated real notification lifecycle remain unverified.
