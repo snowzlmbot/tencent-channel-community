@@ -63,7 +63,7 @@ See [recovered fetch contract](reverse-fetch-contract.md) for five exact tool na
 
 ## Read-only development command
 
-The standalone `native/cmd/tencent-channel-native` command supports `probe`: it performs bounded interaction, system and DM-list reads with the independent caller, prints only counts/stage status, and does not write a baseline, send messages or enable subscriptions. It currently supports an existing private dotenv login only, not keychain-only credentials.
+The standalone `native/cmd/tencent-channel-native` command supports `probe`: it performs bounded interaction, system and DM-list reads with the independent caller, prints only counts/stage status, and does not write a baseline, send messages or enable subscriptions. It supports native macOS Keychain-first credentials with private dotenv fallback; Linux remains dotenv-only. See [credential policy and safe verification](native-credentials.md).
 
 Cloud QA tests and cross-compiles the exact source. The separate `Native development package` workflow requires an explicit boolean approval and reruns checks before packaging the application. Its artifact is a deployment application, not a source of local test evidence; no test logs or credential data are downloaded as substitutes for cloud results. Production replacement and notification activation remain unperformed.
 

@@ -1,3 +1,5 @@
+> Native runner: [credential resolution and safe verification](docs/native-credentials.md) · [Changelog](CHANGELOG.md).
+
 # tencent-channel-community
 
 <p align="center">

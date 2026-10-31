@@ -1,5 +1,12 @@
 # 更新日志
 
+## Native Keychain credential fix (2026-10-31)
+
+- Prefer the official macOS `qq-cli` / `token` Keychain item before private dotenv fallback, so successful Keychain-only reauthorization does not reuse an older dotenv token. Linux retains its existing dotenv behavior.
+- Capture the fixed system credential helper output only in bounded process memory, suppress stderr, enforce a three-second lookup deadline and sanitize every failure; never persist, migrate or print credentials.
+- Add injected/synthetic precedence, fallback, command-capability, size, cancellation and privacy fixtures without querying the real Keychain. See [credential policy](docs/native-credentials.md).
+- Deployment, manual cloud QA/package approval and read-only three-source verification remain separate from this change; no activation, notification, acknowledgment or baseline migration is performed.
+
 ## 0.1.0 — fork interaction adapter (2026-10-28)
 
 - Add an independent interaction-query change detector using the supported read-only `feed get-notices` CLI command.

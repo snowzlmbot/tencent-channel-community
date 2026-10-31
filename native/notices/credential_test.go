@@ -107,8 +107,8 @@ func TestDefaultCredentialOnlySelectedPrivateDotenv(t *testing.T) {
 	}
 	legacy := filepath.Join(home, ".openclaw", ".env")
 	nativeWriteDummy(t, legacy, "QQ_AI_CONNECT_TOKEN=legacy-must-not-be-used\n", 0600)
-	// Missing default must not search legacy, environment, keychain or a process.
-	if got, err := DefaultCredential(context.Background()); err != ErrInvalid || got != "" {
+	// Injected unavailable Keychain must not search legacy or environment.
+	if got, err := defaultCredential(context.Background(), unavailableSyntheticKeychain); err != ErrInvalid || got != "" {
 		t.Fatal("missing default did not fail closed")
 	}
 	selected := filepath.Join(home, ".qqcli", ".env")
@@ -117,7 +117,7 @@ func TestDefaultCredentialOnlySelectedPrivateDotenv(t *testing.T) {
 	if err != nil {
 		t.Fatal("synthetic read failed")
 	}
-	if got, err := DefaultCredential(context.Background()); err != nil || got != "default-dummy" {
+	if got, err := defaultCredential(context.Background(), unavailableSyntheticKeychain); err != nil || got != "default-dummy" {
 		t.Fatal("default synthetic credential not resolved")
 	}
 	after, err := os.ReadFile(selected)
@@ -127,17 +127,17 @@ func TestDefaultCredentialOnlySelectedPrivateDotenv(t *testing.T) {
 	if err := os.Chmod(selected, 0644); err != nil {
 		t.Fatal("fixture chmod failed")
 	}
-	if got, err := DefaultCredential(context.Background()); err != ErrInvalid || got != "" {
+	if got, err := defaultCredential(context.Background(), unavailableSyntheticKeychain); err != ErrInvalid || got != "" {
 		t.Fatal("unsafe existing default fell back")
 	}
 	explicit := filepath.Join(home, "explicit.env")
 	nativeWriteDummy(t, explicit, "QQ_AI_CONNECT_TOKEN=explicit-dummy\n", 0600)
 	t.Setenv("QQ_AI_CONNECT_DOTENV", explicit)
-	if got, err := DefaultCredential(context.Background()); err != nil || got != "explicit-dummy" {
+	if got, err := defaultCredential(context.Background(), unavailableSyntheticKeychain); err != nil || got != "explicit-dummy" {
 		t.Fatal("explicit synthetic selection failed")
 	}
 	t.Setenv("QQ_AI_CONNECT_DOTENV", filepath.Join(home, "missing.env"))
-	if got, err := DefaultCredential(context.Background()); err != ErrInvalid || got != "" {
+	if got, err := defaultCredential(context.Background(), unavailableSyntheticKeychain); err != ErrInvalid || got != "" {
 		t.Fatal("explicit missing path fell back")
 	}
 }
@@ -201,7 +201,7 @@ func TestNativeCredentialPrivateFileChecks(t *testing.T) {
 	if got, err := readNativeCredential(ctx, path); err != ErrInvalid || got != "" {
 		t.Fatal("canceled credential read accepted")
 	}
-	if got, err := DefaultCredential(ctx); err != ErrInvalid || got != "" {
+	if got, err := defaultCredential(ctx, unavailableSyntheticKeychain); err != ErrInvalid || got != "" {
 		t.Fatal("canceled default resolution accepted")
 	}
 }
@@ -220,3 +220,5 @@ func TestNativeCredentialOwner(t *testing.T) {
 		t.Fatal("credential ownership policy mismatch")
 	}
 }
+
+func unavailableSyntheticKeychain(context.Context) (string, error) { return "", ErrInvalid }

@@ -145,3 +145,7 @@ Implement owned interfaces `CredentialSource.Resolve(ctx) -> private credential`
 Pure offline tests should cover exact JSON/body/header construction using a fake RoundTripper, cookie omission/construction, strict host/path rejection, no cross-host redirects, numeric zero versus string-zero/null/missing retCode, JSON-RPC and isError failures, structuredContent fallback, deadline and response-size limits. Credential-provider fixtures must use synthetic tokens and temporary synthetic dotenv files only. Never record live credentials, real notification payloads, raw executable bytes or disassembly in fixtures.
 
 This pass produced documentation and a machine-readable local contract only. It did not implement or run a live caller, and it does not certify live authentication/server behavior. The engineering auth/HTTP specification is no longer blocked on a vendor bridge; remaining verification is owned implementation + offline fixtures, followed by separately authorized normal-runtime controlled-egress validation.
+
+## Owned implementation follow-up (2026-10-31)
+
+The owned runner now implements the recommended macOS Keychain + private dotenv order; the original static investigation above is historical evidence, not the current implementation status. See [runtime credential policy](native-credentials.md) for timeout, sanitization, synthetic-only tests and deployment gates. MCPorter and legacy-file discovery remain deliberately unsupported.

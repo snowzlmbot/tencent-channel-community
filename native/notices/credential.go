@@ -14,14 +14,22 @@ import (
 const maxCredentialFile = 64 << 10
 const nativeTokenKey = "QQ_AI_CONNECT_TOKEN"
 
-// DefaultCredential reads only QQ_AI_CONNECT_TOKEN from the explicitly selected
-// QQ_AI_CONNECT_DOTENV file, or ~/.qqcli/.env when no override is set. It never
-// reads the token environment variable, keychain, MCPorter or legacy locations;
-// never writes/migrates anything; and returns only sanitized ErrInvalid errors.
-// Missing or unsafe files fail closed, with no fallback. Existing login must
-// have persisted a private dotenv file; keychain-only login is not supported.
+// DefaultCredential prefers the native macOS Keychain item, then the selected
+// private dotenv file. Linux keeps dotenv-only behavior. Tokens remain in memory;
+// no environment token, MCPorter, legacy migration or persistence is performed.
 func DefaultCredential(ctx context.Context) (string, error) {
+	return defaultCredential(ctx, platformKeychainCredential)
+}
+
+// Injected seam keeps all credential tests independent of the real Keychain.
+func defaultCredential(ctx context.Context, keychain CredentialProvider) (string, error) {
 	if ctx == nil || ctx.Err() != nil {
+		return "", ErrInvalid
+	}
+	if token, err := keychain(ctx); err == nil && validNativeToken(token) && ctx.Err() == nil {
+		return token, nil
+	}
+	if ctx.Err() != nil {
 		return "", ErrInvalid
 	}
 	path, err := nativeCredentialPath(os.Getenv("QQ_AI_CONNECT_DOTENV"), os.UserHomeDir)

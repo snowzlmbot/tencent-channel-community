@@ -33,7 +33,7 @@ var _ NativeCaller = (*NativeHTTPCaller)(nil)
 
 // NewNativeHTTPCaller does not resolve a credential or perform network I/O.
 // A nil provider fails closed on Call; pass DefaultCredential explicitly to use
-// the native dotenv location. No endpoint environment override is honored.
+// the native Keychain/dotenv locations. No endpoint environment override is honored.
 func NewNativeHTTPCaller(provider CredentialProvider) *NativeHTTPCaller {
 	transport := &http.Transport{
 		Proxy:                 http.ProxyFromEnvironment,
