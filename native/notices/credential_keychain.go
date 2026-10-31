@@ -4,6 +4,8 @@ package notices
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/hex"
 	"io"
 	"os/exec"
 	"strings"
@@ -48,8 +50,40 @@ func readKeychainCredential(ctx context.Context, run keychainCommand) (string, e
 	if run(bounded, "/usr/bin/security", []string{"find-generic-password", "-s", "qq-cli", "-a", "token", "-w"}, out) != nil || bounded.Err() != nil {
 		return "", ErrInvalid
 	}
-	token := strings.TrimSuffix(string(out.data), "\n")
-	if !validNativeToken(token) {
+	return decodeKeychainCredential(out.data)
+}
+
+// decodeKeychainCredential mirrors go-keyring's storage formats, not recursive
+// decoding. All input is bounded before allocation; failures reveal no values.
+func decodeKeychainCredential(raw []byte) (string, error) {
+	if len(raw) > maxCredentialFile+1 {
+		return "", ErrInvalid
+	}
+	stored := strings.TrimSpace(string(raw))
+	if stored == "" || len(stored) > maxCredentialFile {
+		return "", ErrInvalid
+	}
+	var decoded []byte
+	var err error
+	switch {
+	case strings.HasPrefix(stored, "go-keyring-base64:"):
+		body := strings.TrimPrefix(stored, "go-keyring-base64:")
+		// DecodeString otherwise tolerates CR/LF. Require canonical standard base64.
+		decoded, err = base64.StdEncoding.Strict().DecodeString(body)
+		if err == nil && base64.StdEncoding.EncodeToString(decoded) != body {
+			err = ErrInvalid
+		}
+	case strings.HasPrefix(stored, "go-keyring-encoded:"):
+		decoded, err = hex.DecodeString(strings.TrimPrefix(stored, "go-keyring-encoded:"))
+	default:
+		decoded = []byte(stored)
+	}
+	defer clear(decoded)
+	if err != nil {
+		return "", ErrInvalid
+	}
+	token := string(decoded)
+	if !validNativeToken(token) || strings.HasPrefix(token, "go-keyring-") {
 		return "", ErrInvalid
 	}
 	return token, nil

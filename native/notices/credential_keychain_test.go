@@ -4,6 +4,8 @@ package notices
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"io"
 	"os"
@@ -23,7 +25,7 @@ func TestKeychainCommandSynthetic(t *testing.T) {
 		{"valid", "synthetic-keychain\n", false, "synthetic-keychain"},
 		{"no-newline", "synthetic-keychain", false, "synthetic-keychain"},
 		{"empty", "", false, ""}, {"spaces", "a b\n", false, ""},
-		{"multiline", "a\nb\n", false, ""}, {"control", "a\r\n", false, ""},
+		{"multiline", "a\nb\n", false, ""}, {"trim-space", " \ta\r\n", false, "a"}, {"control", "a\x00\n", false, ""},
 		{"oversized", strings.Repeat("a", maxCredentialFile+2), false, ""},
 		{"command-failure", "synthetic-secret", true, ""},
 	} {
@@ -102,5 +104,31 @@ func TestKeychainPreferredAndFallbackSynthetic(t *testing.T) {
 	t.Setenv("QQ_AI_CONNECT_DOTENV", path+".missing")
 	if token, err := defaultCredential(context.Background(), func(context.Context) (string, error) { return "synthetic-fresh", nil }); token != "synthetic-fresh" || err != nil {
 		t.Fatal("Keychain unexpectedly depends on dotenv")
+	}
+}
+
+func TestKeychainCodecSynthetic(t *testing.T) {
+	token := "synthetic-token_123.abc-XYZ"
+	b64 := func(s string) string { return "go-keyring-base64:" + base64.StdEncoding.EncodeToString([]byte(s)) }
+	legacy := func(s string) string { return "go-keyring-encoded:" + hex.EncodeToString([]byte(s)) }
+	for _, stored := range []string{token, b64(token), legacy(token), " \t" + b64(token) + "\r\n"} {
+		got, err := decodeKeychainCredential([]byte(stored))
+		if err != nil || got != token {
+			t.Fatal("synthetic codec acceptance mismatch")
+		}
+	}
+	for _, stored := range []string{
+		"", " \n", "go-keyring-base64:", "go-keyring-encoded:",
+		"go-keyring-base64:!bad", "go-keyring-base64:YR==", "go-keyring-base64:YQ", "go-keyring-base64:YQ==\nYQ==",
+		"go-keyring-encoded:0", "go-keyring-encoded:zz", "go-keyring-encoded:61 62",
+		b64(b64(token)), legacy(b64(token)), b64(legacy(token)), legacy(legacy(token)),
+		"go-keyring-unknown:abc", b64(""), legacy(""), b64("a b"), legacy("a\nb"),
+		b64("a\x00b"), b64("a\x7fb"), b64("非ASCII"), "a\tb", "a\nb",
+		strings.Repeat("a", maxCredentialFile+2), b64(strings.Repeat("a", maxCredentialFile)),
+	} {
+		got, err := decodeKeychainCredential([]byte(stored))
+		if got != "" || err != ErrInvalid {
+			t.Fatal("invalid synthetic codec input accepted or error exposed")
+		}
 	}
 }

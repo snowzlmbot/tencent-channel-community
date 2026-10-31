@@ -274,3 +274,5 @@ tencent-channel-community/
 <p align="center">
   Made with ❤️ for 腾讯频道社区
 </p>
+
+原生只读 runner 的 macOS Keychain 兼容性包含官方 go-keyring base64、旧 hex 和 plain 存储解码；安全边界与手动云端验收见[凭据策略](docs/native-credentials.md)及[更新日志](CHANGELOG.md)。

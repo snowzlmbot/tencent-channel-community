@@ -1,5 +1,12 @@
 # 更新日志
 
+## Native Keychain storage codec correction (2026-10-31)
+
+- Decode official go-keyring base64 storage and legacy hex storage once, retaining plain-token compatibility and the existing bounded three-second helper lookup.
+- Reject malformed/noncanonical encodings, empty/oversized decoded tokens, whitespace/control/non-ASCII tokens and nested or unknown storage wrappers without exposing values. Add synthetic codec and command-boundary coverage.
+- Correct the earlier interpretation of `8011`: the first Keychain patch sent the storage wrapper instead of the decoded token; successful credential retrieval alone did not establish valid authentication or an endpoint defect. No login, endpoint change or expanded scope is needed for this codec fix.
+- Preserve all notification, acknowledgment, checkpoint, scheduler and deployment approval boundaries. See [credential policy](docs/native-credentials.md).
+
 ## Native Keychain credential fix (2026-10-31)
 
 - Prefer the official macOS `qq-cli` / `token` Keychain item before private dotenv fallback, so successful Keychain-only reauthorization does not reuse an older dotenv token. Linux retains its existing dotenv behavior.
